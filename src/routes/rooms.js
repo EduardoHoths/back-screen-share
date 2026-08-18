@@ -7,6 +7,8 @@ import {
   stopRoom,
 } from '../services/rooms.js'
 
+import { createRoomToken } from '../services/livekit.js'
+
 export async function roomRoutes(server) {
   server.post('/', async (request, reply) => {
     const room = createRoom(request.body ?? {})
@@ -59,6 +61,23 @@ export async function roomRoutes(server) {
         canPublish: false,
         canSubscribe: true,
       },
+    }
+  })
+
+  server.post('/:id/token', async (request, reply) => {
+    const room = findRoomById(request.params.id)
+
+    if (!room) {
+      return reply.code(404).send({ message: 'Room not found' })
+    }
+
+    const role = request.body?.role === 'host' ? 'host' : 'viewer'
+    const participantName = request.body?.participantName ?? role
+    const credentials = await createRoomToken({ room, participantName, role })
+
+    return {
+      room,
+      ...credentials,
     }
   })
 }
