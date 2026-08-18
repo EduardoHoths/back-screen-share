@@ -27,9 +27,10 @@ function serializeRoom(room) {
 
 export function createRoom(input = {}) {
   const now = new Date().toISOString()
+  const slug = createUniqueSlug(input.slug)
   const room = {
     id: crypto.randomUUID(),
-    slug: normalizeSlug(input.slug),
+    slug,
     ownerName: String(input.ownerName ?? 'Host').trim() || 'Host',
     status: validStatuses.has(input.status) ? input.status : 'waiting',
     viewers: 0,
@@ -39,6 +40,17 @@ export function createRoom(input = {}) {
 
   rooms.set(room.id, room)
   return serializeRoom(room)
+}
+
+function createUniqueSlug(value) {
+  const baseSlug = normalizeSlug(value)
+  let slug = baseSlug
+
+  while (Array.from(rooms.values()).some((room) => room.slug === slug)) {
+    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+  }
+
+  return slug
 }
 
 export function findRoomById(id) {

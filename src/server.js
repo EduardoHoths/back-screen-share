@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import cors from '@fastify/cors'
 import Fastify from 'fastify'
 import { roomRoutes } from './routes/rooms.js'
