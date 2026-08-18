@@ -7,8 +7,22 @@ const server = Fastify({
   logger: true,
 })
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+].filter(Boolean)
+
 await server.register(cors, {
-  origin: true,
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+      return
+    }
+
+    callback(new Error('Origin not allowed by CORS'), false)
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
 })
 
 await server.register(roomRoutes, {
